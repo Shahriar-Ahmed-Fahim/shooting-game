@@ -21,15 +21,17 @@ let playerShip = [
     {x: (tileCountX / 2) - 1, y: (tileCountY / 2) + 2},
 ]
 
+let playerBullet = []
+
 let enemyShipRandomXValue;
 let enemyShipRandomYValue;
 
 let enemyShips = []
 
-document.addEventListener("keydown", (e)=>{
+document.addEventListener("keydown", (e)=>{    
     if (e.key === "ArrowUp") {
         if (shipDirection !== "up") {
-            rotatePlayerShip("up");
+            rotatePlayerShip(playerShip, "up");
         }else{
             dx = 0;
             dy = -1;
@@ -38,7 +40,7 @@ document.addEventListener("keydown", (e)=>{
     }
     else if (e.key === "ArrowDown") {
         if (shipDirection !== "down") {
-            rotatePlayerShip("down");
+            rotatePlayerShip(playerShip, "down");
         }else{
             dx = 0;
             dy = 1;
@@ -47,7 +49,7 @@ document.addEventListener("keydown", (e)=>{
     }
     else if (e.key === "ArrowLeft") {
         if (shipDirection !== "left") {
-            rotatePlayerShip("left");
+            rotatePlayerShip(playerShip, "left");
         }else{
             dx = -1;
             dy = 0;
@@ -56,98 +58,92 @@ document.addEventListener("keydown", (e)=>{
     }
     else if (e.key === "ArrowRight") {
         if (shipDirection !== "right") {
-            rotatePlayerShip("right");
+            rotatePlayerShip(playerShip, "right");
         }else{
             dx = 1;
             dy = 0;
             updatePlayerShip();
         }
+    }else if(e.key === " "){
+        firePlayerBullet(shipDirection);
     }
 })
 
-function rotatePlayerShip(direction) {
-    let minX = playerShip[0].x;
-    let maxX = playerShip[0].x;
-    let minY = playerShip[0].y;
-    let maxY = playerShip[0].y;
+function rotatePlayerShip(ship, direction) {
 
-    for (let i = 1; i < playerShip.length; i++) {
-        if (playerShip[i].x < minX) minX = playerShip[i].x;
-        if (playerShip[i].x > maxX) maxX = playerShip[i].x;
-        if (playerShip[i].y < minY) minY = playerShip[i].y;
-        if (playerShip[i].y > maxY) maxY = playerShip[i].y;
-    }
-
-    let uniqueX = [...new Set(playerShip.map(p => p.x))];
-    let uniqueY = [...new Set(playerShip.map(p => p.y))];
+    let { minX, maxX, minY, maxY } = getMinMaxCoordinates(ship);
+    let uniqueX = [...new Set(ship.map(p => p.x))];
+    let uniqueY = [...new Set(ship.map(p => p.y))];
     let avgUniqueX = uniqueX.reduce((sum, val) => sum + val, 0) / uniqueX.length;
     let avgUniqueY = uniqueY.reduce((sum, val) => sum + val, 0) / uniqueY.length;
 
     if (direction === "up") {
-        playerShip[0].x = avgUniqueX;
-        playerShip[0].y = minY;
-        playerShip[1].x = minX;
-        playerShip[1].y = minY+1;
-        playerShip[2].x = minX+1;
-        playerShip[2].y = minY+1;
-        playerShip[3].x = minX+2;
-        playerShip[3].y = minY+1;
-        playerShip[4].x = minX;
-        playerShip[4].y = minY+2;
-        playerShip[5].x = minX+1;
-        playerShip[5].y = minY+2;
-        playerShip[6].x = minX+2;
-        playerShip[6].y = minY+2;
+        ship[0].x = avgUniqueX;
+        ship[0].y = minY;
+        ship[1].x = minX;
+        ship[1].y = minY+1;
+        ship[2].x = minX+1;
+        ship[2].y = minY+1;
+        ship[3].x = minX+2;
+        ship[3].y = minY+1;
+        ship[4].x = minX;
+        ship[4].y = minY+2;
+        ship[5].x = minX+1;
+        ship[5].y = minY+2;
+        ship[6].x = minX+2;
+        ship[6].y = minY+2;
     }else if (direction === "down"){
-        playerShip[0].x = avgUniqueX;
-        playerShip[0].y = maxY;
-        playerShip[1].x = minX;
-        playerShip[1].y = minY+1;
-        playerShip[2].x = minX+1;
-        playerShip[2].y = minY+1;
-        playerShip[3].x = minX+2;
-        playerShip[3].y = minY+1;
-        playerShip[4].x = minX;
-        playerShip[4].y = minY;
-        playerShip[5].x = minX+1;
-        playerShip[5].y = minY;
-        playerShip[6].x = minX+2;
-        playerShip[6].y = minY;
+        ship[0].x = avgUniqueX;
+        ship[0].y = maxY;
+        ship[1].x = minX;
+        ship[1].y = minY+1;
+        ship[2].x = minX+1;
+        ship[2].y = minY+1;
+        ship[3].x = minX+2;
+        ship[3].y = minY+1;
+        ship[4].x = minX;
+        ship[4].y = minY;
+        ship[5].x = minX+1;
+        ship[5].y = minY;
+        ship[6].x = minX+2;
+        ship[6].y = minY;
     }else if (direction === "left"){
-        playerShip[0].x = minX;
-        playerShip[0].y = avgUniqueY;
-        playerShip[1].x = minX+1;
-        playerShip[1].y = minY;
-        playerShip[2].x = minX+2;
-        playerShip[2].y = minY;
-        playerShip[3].x = minX+1;
-        playerShip[3].y = minY+1;
-        playerShip[4].x = minX+2;
-        playerShip[4].y = minY+1;
-        playerShip[5].x = minX+1;
-        playerShip[5].y = minY+2;
-        playerShip[6].x = minX+2;
-        playerShip[6].y = minY+2;
+        ship[0].x = minX;
+        ship[0].y = avgUniqueY;
+        ship[1].x = minX+1;
+        ship[1].y = minY;
+        ship[2].x = minX+2;
+        ship[2].y = minY;
+        ship[3].x = minX+1;
+        ship[3].y = minY+1;
+        ship[4].x = minX+2;
+        ship[4].y = minY+1;
+        ship[5].x = minX+1;
+        ship[5].y = minY+2;
+        ship[6].x = minX+2;
+        ship[6].y = minY+2;
     }else if (direction === "right"){
-        playerShip[0].x = maxX;
-        playerShip[0].y = avgUniqueY;
-        playerShip[1].x = minX;
-        playerShip[1].y = minY;
-        playerShip[2].x = minX+1;
-        playerShip[2].y = minY;
-        playerShip[3].x = minX;
-        playerShip[3].y = minY+1;
-        playerShip[4].x = minX+1;
-        playerShip[4].y = minY+1;
-        playerShip[5].x = minX;
-        playerShip[5].y = minY+2;
-        playerShip[6].x = minX+1;
-        playerShip[6].y = minY+2;
+        ship[0].x = maxX;
+        ship[0].y = avgUniqueY;
+        ship[1].x = minX;
+        ship[1].y = minY;
+        ship[2].x = minX+1;
+        ship[2].y = minY;
+        ship[3].x = minX;
+        ship[3].y = minY+1;
+        ship[4].x = minX+1;
+        ship[4].y = minY+1;
+        ship[5].x = minX;
+        ship[5].y = minY+2;
+        ship[6].x = minX+1;
+        ship[6].y = minY+2;
     }
 
     drawGame();
 
-    shipDirection = direction;
+    if (ship === playerShip) {
+        shipDirection = direction;
+    }
 }
 
 function drawGame(){
@@ -159,17 +155,11 @@ function drawGame(){
         ctx.fillRect(playerShip[i].x * gridSize , playerShip[i].y * gridSize, gridSize - 2, gridSize - 2);
     }
 
-    drawEnemies();
-}
-
-function drawEnemies(){
-
     ctx.fillStyle = "red";
     for (let i = 0; i < enemyShips.length; i++) {
         let ship = enemyShips[i];
         for (let j = 0; j < ship.length; j++) {
-            let part = ship[j];
-            ctx.fillRect(part.x * gridSize, part.y * gridSize, gridSize - 2, gridSize - 2);
+            ctx.fillRect(ship[j].x * gridSize, ship[j].y * gridSize, gridSize - 2, gridSize - 2);
         }
     }
 }
@@ -178,15 +168,40 @@ function generateEnemies(){
     if(enemyShips.length >= 4) return;
     enemyShipRandomXValue = Math.floor(Math.random()*tileCountX);
     enemyShipRandomYValue = Math.floor(Math.random()*tileCountY);
+
+    if(enemyShipRandomXValue < 1 || enemyShipRandomYValue < 1 || enemyShipRandomXValue > tileCountX-2 || enemyShipRandomYValue > tileCountY-2){
+        generateEnemies();
+        return;
+    }
+
+    for (let i = 0; i < enemyShips.length; i++) {
+        let ship = enemyShips[i];
+        for (let j = 0; j < ship.length; j++) {
+            if(enemyShipRandomXValue == ship[j].x || enemyShipRandomYValue == ship[j].y){
+                generateEnemies();
+                return;
+            }
+        }
+    }
+
     const newShip = [
-        {x: enemyShipRandomXValue / 2, y: enemyShipRandomYValue / 2},
-        {x: (enemyShipRandomXValue / 2) + 1, y: (enemyShipRandomYValue / 2) + 1},
-        {x: (enemyShipRandomXValue / 2), y: (enemyShipRandomYValue / 2) + 1},
-        {x: (enemyShipRandomXValue / 2) - 1, y: (enemyShipRandomYValue / 2) + 1},
-        {x: (enemyShipRandomXValue / 2) + 1, y: (enemyShipRandomYValue / 2) + 2},
-        {x: (enemyShipRandomXValue / 2), y: (enemyShipRandomYValue / 2) + 2},
-        {x: (enemyShipRandomXValue / 2) - 1, y: (enemyShipRandomYValue / 2) + 2},
+        {x: enemyShipRandomXValue, y: enemyShipRandomYValue},
+        {x: enemyShipRandomXValue + 1, y: enemyShipRandomYValue + 1},
+        {x: enemyShipRandomXValue , y: enemyShipRandomYValue + 1},
+        {x: enemyShipRandomXValue - 1, y: enemyShipRandomYValue + 1},
+        {x: enemyShipRandomXValue + 1, y: enemyShipRandomYValue + 2},
+        {x: enemyShipRandomXValue, y: enemyShipRandomYValue + 2},
+        {x: enemyShipRandomXValue - 1, y: enemyShipRandomYValue + 2},
     ];
+
+    for(let i = 0; i< newShip.length; i++){
+        for(let j=0; j<playerShip.length; j++){
+            if (newShip[i].x === playerShip[j].x && newShip[i].y === playerShip[j].y) {
+                generateEnemies();
+                return;
+            }
+        }
+    }
 
     enemyShips.push(newShip);
 }
@@ -198,6 +213,10 @@ function updatePlayerShip(){
         return;
     }
 
+    let tempPlayerShip = playerShip.map(p => ({ x: p.x + dx, y: p.y + dy }));
+
+    if(playerEnemyOverlap(tempPlayerShip)) return;
+
     for(let i = 0; i < playerShip.length; i++){
         playerShip[i].x += dx;
         playerShip[i].y += dy;
@@ -208,21 +227,108 @@ function updatePlayerShip(){
 
 function gameLoop(){
     drawGame();
+    if(enemyShips.length == 0) generateEnemies();
     setTimeout(gameLoop, 100); 
 }
 
-function getEnemies() {
-    if(enemyShips.length < 4) generateEnemies();
+function getMinMaxCoordinates(arr) {
 
-    setTimeout(getEnemies(), 5000);
+    let minX = arr[0].x;
+    let maxX = arr[0].x;
+    let minY = arr[0].y;
+    let maxY = arr[0].y;
+
+    for (let i = 1; i < arr.length; i++) {
+        if (arr[i].x < minX) minX = arr[i].x;
+        if (arr[i].x > maxX) maxX = arr[i].x;
+        if (arr[i].y < minY) minY = arr[i].y;
+        if (arr[i].y > maxY) maxY = arr[i].y;
+    }
+
+    return { minX, maxX, minY, maxY };
+}
+
+function playerEnemyOverlap(tempShip){
+    let { minX: PminX, maxX: PmaxX, minY: PminY, maxY: PmaxY } = getMinMaxCoordinates(tempShip);
+    for (let i = 0; i < enemyShips.length; i++) {
+        let ship = enemyShips[i];
+        let { minX: EminX, maxX: EmaxX, minY: EminY, maxY: EmaxY } = getMinMaxCoordinates(ship);
+
+        if((inMiddle(EminY, EmaxY, PmaxY) || inMiddle(EminY, EmaxY, PminY)) && (inMiddle(EminX, EmaxX, PmaxX) || inMiddle(EminX, EmaxX, PminX))){
+            return true;
+        }
+
+        if([EminX, EmaxX].includes([PminX, PmaxX]) && [EminY, EmaxY].includes([PminY, PmaxY]) ) return true;
+        // console.log([PminX, PmaxX, PminY, PmaxY], [EminX, EmaxX, EminY, EmaxY]);
+    }
+    
+    return false;
+
+}
+
+function inMiddle(lowerBound, upperBound, corrdinate){
+    if(lowerBound <= corrdinate && upperBound >= corrdinate) return true;
+    else return false;
+}
+
+function firePlayerBullet(direction){
+    playerBullet.push({
+        x: playerShip[0].x,
+        y: playerShip[0].y,
+        dir: direction
+    });
+}
+
+function updateBullet(bullet){
+    let index = playerBullet.indexOf(bullet);
+
+    if(bullet.dir === "up"){
+        bullet.y -= 1;
+        if(bullet.y < 0) playerBullet.splice(index, 1);
+    }else if(bullet.dir === "down"){
+        bullet.y += 1;
+        if(bullet.y > tileCountY) playerBullet.splice(index, 1);
+    }else if(bullet.dir === "left"){
+        bullet.x -= 1;
+        if(bullet.x < 0) playerBullet.splice(index, 1);
+    }else if(bullet.dir === "right"){
+        bullet.x += 1;
+        if(bullet.x > tileCountX) playerBullet.splice(index, 1);
+    }
+
+
+    for(let i = 0; i<enemyShips.length; i++){
+        let ship = enemyShips[i];
+        let shipIndex = enemyShips.indexOf(ship);
+        for(let j = 0; j < ship.length; j++){
+            // console.log(`Bullet ${bullet.x, bullet.y} Enemy : ${ship[j].x, ship[j].y}`);
+            if(bullet.x == ship[j].x && bullet.y == ship[j].y){
+                playerBullet.splice(index, 1);
+                enemyShips.splice(shipIndex, 1);
+            }
+        }
+    }
+
 }
 
 
+function drawbullet(){
+    ctx.fillStyle = "blue";
+    for(let i = 0; i < playerBullet.length; i++){
+        ctx.fillRect(playerBullet[i].x * gridSize, playerBullet[i].y * gridSize, gridSize - 2, gridSize - 2);
+        updateBullet(playerBullet[i]);
+    }
+    setTimeout(drawbullet, 100); 
+}
+
 
 gameLoop();
-setTimeout(() => {
-    generateEnemies();
-}, 1000);
+drawbullet();
 
-getEnemies();
+setInterval(generateEnemies, Math.random()*3000);
 
+setInterval(()=>{
+    let enemeyRandomIndex = Math.floor(Math.random()*enemyShips.length);
+    let dir = ["up", 'down', "left", "right"];
+    rotatePlayerShip(enemyShips[enemeyRandomIndex], dir[Math.floor(Math.random()*4)]);
+}, Math.random()*5000);
